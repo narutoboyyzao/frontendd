@@ -72,10 +72,10 @@ function App() {
 
   useEffect(() => {
     if (!user) return
-    if (page === 'dashboard' || page === 'history') {
+    if (['dashboard','history','admin','reports'].includes(page)) {
       api('/coletas/me').then(data => setCollections(Array.isArray(data) ? data : data?.content || [])).catch(() => setCollections([]))
     }
-    if (page === 'points') {
+    if (['points','partners','admin','reports'].includes(page)) {
       api('/empresas/aprovadas', {}, false).then(data => setPoints(Array.isArray(data) ? data : [])).catch(() => setPoints([]))
     }
   }, [page, user])
@@ -133,7 +133,7 @@ function App() {
   const navLink = (text, target) => <button key={target} onClick={() => go(target)} className={`whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition ${page === target ? 'bg-emerald-50 text-emerald-900' : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-900'}`}>{text}</button>
 
   return <div className="min-h-screen bg-[#f7faf8] text-slate-800">
-    <header className="sticky top-0 z-20 border-b border-slate-100 bg-white/95 backdrop-blur">
+    {!figmaPages.includes(page) && <header className="sticky top-0 z-20 border-b border-slate-100 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3.5 lg:px-8">
         <Brand />
         <nav className="hidden items-center gap-1 md:flex">
@@ -145,7 +145,7 @@ function App() {
           {user ? <><button onClick={() => go('dashboard')} className="hidden rounded-full px-4 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-50 sm:block">Meu painel</button><button onClick={logout} className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50">Sair</button></> : <><button onClick={() => go('login')} className="rounded-full px-3 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-50">Entrar</button><button onClick={() => go('register')} className="rounded-full bg-emerald-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-900">Começar agora</button></>}
         </div>
       </div>
-    </header>
+    </header>}
 
     {notice && <div role="status" className={`mx-auto mt-4 flex max-w-7xl items-start justify-between gap-4 rounded-xl border px-4 py-3 text-sm ${noticeType === 'error' ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-900'}`}><span>{notice}</span><button onClick={() => setNotice('')} aria-label="Fechar aviso">×</button></div>}
 
@@ -212,7 +212,7 @@ function App() {
 
     {!['home','register','signup','company','point','login','recovery','how','points','dashboard','history','score','ranking','profile','admin','users','approvals','partners','point-form','reports','education'].includes(page) && <main className="mx-auto max-w-3xl px-5 py-20 text-center"><span className="text-4xl text-emerald-700">♻</span><h1 className="mt-4 text-3xl font-extrabold text-emerald-950">Essa área está sendo preparada</h1><p className="mt-3 text-slate-600">Vamos evoluir esta tela nas próximas etapas.</p><button onClick={() => go(user ? 'dashboard' : 'home')} className="mt-6 rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white">Voltar</button></main>}
 
-    <footer className="border-t border-slate-100 bg-white"><div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between lg:px-8"><Brand /><p className="text-sm text-slate-500">Pequenas atitudes. Grandes transformações.</p><p className="text-xs text-slate-400">© {new Date().getFullYear()} EletroRecicla</p></div></footer>
+    {!figmaPages.includes(page) && <footer className="border-t border-slate-100 bg-white"><div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between lg:px-8"><Brand /><p className="text-sm text-slate-500">Pequenas atitudes. Grandes transformações.</p><p className="text-xs text-slate-400">© {new Date().getFullYear()} EletroRecicla</p></div></footer>
   </div>
 }
 
