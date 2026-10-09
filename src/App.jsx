@@ -212,7 +212,7 @@ function App() {
 
     {!['home','register','signup','company','point','login','recovery','how','points','dashboard','history','score','ranking','profile','admin','users','approvals','partners','point-form','reports','education'].includes(page) && <main className="mx-auto max-w-3xl px-5 py-20 text-center"><span className="text-4xl text-emerald-700">♻</span><h1 className="mt-4 text-3xl font-extrabold text-emerald-950">Essa área está sendo preparada</h1><p className="mt-3 text-slate-600">Vamos evoluir esta tela nas próximas etapas.</p><button onClick={() => go(user ? 'dashboard' : 'home')} className="mt-6 rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white">Voltar</button></main>}
 
-    {!figmaPages.includes(page) && <footer className="border-t border-slate-100 bg-white"><div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between lg:px-8"><Brand /><p className="text-sm text-slate-500">Pequenas atitudes. Grandes transformações.</p><p className="text-xs text-slate-400">© {new Date().getFullYear()} EletroRecicla</p></div></footer>
+    {!figmaPages.includes(page) && <footer className="border-t border-slate-100 bg-white"><div className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 sm:flex-row sm:items-center sm:justify-between lg:px-8"><Brand /><p className="text-sm text-slate-500">Pequenas atitudes. Grandes transformações.</p><p className="text-xs text-slate-400">© {new Date().getFullYear()} EletroRecicla</p></div></footer>}
   </div>
 }
 
