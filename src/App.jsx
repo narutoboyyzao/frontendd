@@ -34,33 +34,33 @@ function Brand({ light = false }) {
 }
 
 function formatFieldValue(name, value) {
-  const digits = value.replace(/\\D/g, '')
+  const digits = value.replace(/\D/g, '')
 
   if (name === 'cpf') {
     return digits.slice(0, 11)
-      .replace(/(\\d{3})(\\d)/, '$1.$2')
-      .replace(/(\\d{3})(\\d)/, '$1.$2')
-      .replace(/(\\d{3})(\\d{1,2})$/, '$1-$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
   }
 
   if (name === 'cnpj') {
     return digits.slice(0, 14)
-      .replace(/(\\d{2})(\\d)/, '$1.$2')
-      .replace(/(\\d{3})(\\d)/, '$1.$2')
-      .replace(/(\\d{3})(\\d)/, '$1/$2')
-      .replace(/(\\d{4})(\\d{1,2})$/, '$1-$2')
+      .replace(/(\d{2})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1/$2')
+      .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
   }
 
   if (name === 'telefone') {
     const limited = digits.slice(0, 11)
     if (limited.length <= 10) {
       return limited
-        .replace(/(\\d{2})(\\d)/, '($1) $2')
-        .replace(/(\\d{4})(\\d{1,4})$/, '$1-$2')
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{4})(\d{1,4})$/, '$1-$2')
     }
     return limited
-      .replace(/(\\d{2})(\\d)/, '($1) $2')
-      .replace(/(\\d{5})(\\d{1,4})$/, '$1-$2')
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{5})(\d{1,4})$/, '$1-$2')
   }
 
   return value
@@ -123,12 +123,12 @@ function App() {
     const values = Object.fromEntries(new FormData(e.currentTarget))
     try {
       if (page === 'signup') {
-        if (String(values.cpf || '').replace(/\\D/g, '').length !== 11) throw new Error('Informe um CPF com 11 dígitos.')
-        if (![10, 11].includes(String(values.telefone || '').replace(/\\D/g, '').length)) throw new Error('Informe um telefone válido com DDD.')
+        if (String(values.cpf || '').replace(/\D/g, '').length !== 11) throw new Error('Informe um CPF com 11 dígitos.')
+        if (![10, 11].includes(String(values.telefone || '').replace(/\D/g, '').length)) throw new Error('Informe um telefone válido com DDD.')
       }
       if (page === 'company' || page === 'point') {
-        if (String(values.cnpj || '').replace(/\\D/g, '').length !== 14) throw new Error('Informe um CNPJ com 14 dígitos.')
-        if (String(values.telefone || '').replace(/\\D/g, '').length < 10) throw new Error('Informe um telefone válido com DDD.')
+        if (String(values.cnpj || '').replace(/\D/g, '').length !== 14) throw new Error('Informe um CNPJ com 14 dígitos.')
+        if (String(values.telefone || '').replace(/\D/g, '').length < 10) throw new Error('Informe um telefone válido com DDD.')
       }
 
       if (page === 'login') {
