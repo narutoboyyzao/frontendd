@@ -1,16 +1,49 @@
-# React + Vite
+# EletroRecicla — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Frontend responsivo da plataforma EletroRecicla, desenvolvido com React, Vite e Tailwind CSS v4.
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js compatível com a versão do Vite instalada
+- npm
+- Acesso à internet para instalar dependências e carregar a fonte DM Sans
 
-## React Compiler
+## Executar localmente
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Depois de atualizar o repositório:
 
-## Expanding the Oxlint configuration
+```bash
+git pull
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Abra o endereço local exibido pelo Vite no terminal.
+
+## Build de produção
+
+```bash
+npm run build
+```
+
+## API
+
+O frontend usa por padrão a API de desenvolvimento do EletroRecicla. Para configurar outro endereço, copie `.env.example` para `.env` e altere:
+
+```env
+VITE_API_URL=https://eletrorecicla-backend.onrender.com/api/v1
+```
+
+Variáveis `VITE_*` são públicas no bundle do frontend. Não coloque segredos nelas.
+
+## Fluxos disponíveis
+
+- Página inicial e explicação do projeto
+- Escolha de perfil
+- Cadastro de cidadão
+- Cadastro de empresa e ponto de coleta
+- Login e acesso à área do cidadão
+- Consulta de pontos de coleta
+- Painel e histórico de descartes (dependem da API)
+
+Algumas funcionalidades dependem de rotas que precisam existir e estar disponíveis no backend. O cadastro de empresa/ponto usa o endpoint `POST /empresas`, conforme a integração que já existia no projeto.
