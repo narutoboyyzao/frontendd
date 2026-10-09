@@ -33,8 +33,47 @@ function Brand({ light = false }) {
   </a>
 }
 
+function formatFieldValue(name, value) {
+  const digits = value.replace(/\D/g, '')
+
+  if (name === 'cpf') {
+    return digits.slice(0, 11)
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  }
+
+  if (name === 'cnpj') {
+    return digits.slice(0, 14)
+      .replace(/(\d{2})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1/$2')
+      .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
+  }
+
+  if (name === 'telefone') {
+    const limited = digits.slice(0, 11)
+    if (limited.length <= 10) {
+      return limited
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{4})(\d{1,4})$/, '$1-$2')
+    }
+    return limited
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{5})(\d{1,4})$/, '$1-$2')
+  }
+
+  return value
+}
+
 function Field({ label, name, type = 'text', required = true, placeholder, autoComplete, ...props }) {
-  return <label className={labelClass}>{label}<input className={inputClass} name={name} type={type} required={required} placeholder={placeholder || label} autoComplete={autoComplete} {...props} /></label>
+  const maxLength = name === 'cpf' ? 14 : name === 'cnpj' ? 18 : name === 'telefone' ? 15 : undefined
+
+  return <label className={labelClass}>{label}<input className={inputClass} name={name} type={type} required={required} placeholder={placeholder || label} autoComplete={autoComplete} maxLength={maxLength} {...props} onChange={event => {
+    const formatted = formatFieldValue(name, event.target.value)
+    event.target.value = formatted
+    props.onChange?.(event)
+  }} /></label>
 }
 
 function App() {
@@ -83,6 +122,15 @@ function App() {
     setBusy(true)
     const values = Object.fromEntries(new FormData(e.currentTarget))
     try {
+      if (page === 'signup') {
+        if (String(values.cpf || '').replace(/\D/g, '').length !== 11) throw new Error('Informe um CPF com 11 dígitos.')
+        if (![10, 11].includes(String(values.telefone || '').replace(/\D/g, '').length)) throw new Error('Informe um telefone válido com DDD.')
+      }
+      if (page === 'company' || page === 'point') {
+        if (String(values.cnpj || '').replace(/\D/g, '').length !== 14) throw new Error('Informe um CNPJ com 14 dígitos.')
+        if (String(values.telefone || '').replace(/\D/g, '').length < 10) throw new Error('Informe um telefone válido com DDD.')
+      }
+
       if (page === 'login') {
         const result = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email: values.email, senha: values.senha }) }, false)
         localStorage.setItem('er-token', result.token)
@@ -98,7 +146,8 @@ function App() {
         notify(`Cadastro enviado com sucesso${created?.nome ? ', ' + created.nome : ''}! Agora você já pode entrar.`)
         go('login')
       } else if (page === 'company' || page === 'point') {
-        await api('/empresas', { method: 'POST', body: JSON.stringify({ razaoSocial: values.razaoSocial, cnpj: values.cnpj, email: values.email, telefone: values.telefone, endereco: values.endereco, latitude: values.latitude ? Number(values.latitude) : null, longitude: values.longitude ? Number(values.longitude) : null }) }, false)
+        const enderecoCompleto = [values.endereco, values.cidade, values.estado].filter(Boolean).join(', ').replace(/, ([A-Z]{2})$/, ' - $1')
+        await api('/empresas', { method: 'POST', body: JSON.stringify({ razaoSocial: values.razaoSocial, cnpj: values.cnpj, email: values.email, telefone: values.telefone, endereco: enderecoCompleto, latitude: values.latitude ? Number(values.latitude) : null, longitude: values.longitude ? Number(values.longitude) : null }) }, false)
         notify('Cadastro enviado para análise. Você receberá uma atualização após a avaliação.')
         go('home')
       } else if (page === 'recovery') {
@@ -190,7 +239,7 @@ function App() {
         <h1 className="text-2xl font-extrabold tracking-tight text-emerald-950 sm:text-3xl">{formTitles[page][0]}</h1><p className="mt-2 text-sm leading-6 text-slate-500">{formTitles[page][1]}</p>
         <form onSubmit={submit} className="mt-7 space-y-5">
           {page === 'signup' && <><Field label="Nome completo" name="nome" autoComplete="name" placeholder="Seu nome e sobrenome" /><div className="grid gap-5 sm:grid-cols-2"><Field label="CPF" name="cpf" placeholder="000.000.000-00" /><Field label="Telefone" name="telefone" type="tel" autoComplete="tel" placeholder="(00) 00000-0000" /></div><Field label="E-mail" name="email" type="email" autoComplete="email" placeholder="voce@exemplo.com" /><div className="grid gap-5 sm:grid-cols-2"><Field label="Senha" name="senha" type="password" autoComplete="new-password" minLength={6} placeholder="Mínimo de 6 caracteres" /><Field label="Confirmar senha" name="confirmacao" type="password" autoComplete="new-password" minLength={6} /></div><label className="flex items-start gap-3 text-sm leading-5 text-slate-600"><input type="checkbox" required className="mt-1 accent-emerald-700" />Concordo com os termos de uso e a política de privacidade.</label></>}
-          {(page === 'company' || page === 'point') && <><div className="grid gap-5 sm:grid-cols-2"><Field label="Razão social" name="razaoSocial" placeholder="Nome registrado da empresa" /><Field label="CNPJ" name="cnpj" placeholder="00.000.000/0000-00" /></div>{page === 'point' && <p className="rounded-xl bg-emerald-50 p-3 text-xs leading-5 text-emerald-900">O cadastro será enviado para aprovação antes de o ponto aparecer na busca pública.</p>}<Field label="E-mail de contato" name="email" type="email" autoComplete="email" /><div className="grid gap-5 sm:grid-cols-2"><Field label="Telefone" name="telefone" type="tel" /><Field label="Endereço completo" name="endereco" autoComplete="street-address" placeholder="Rua, número, bairro, cidade - UF" /></div><div className="grid gap-5 sm:grid-cols-2"><Field label="Latitude (opcional)" name="latitude" type="number" required={false} step="any" placeholder="-23.5505" /><Field label="Longitude (opcional)" name="longitude" type="number" required={false} step="any" placeholder="-46.6333" /></div></>}
+          {(page === 'company' || page === 'point') && <><div className="grid gap-5 sm:grid-cols-2"><Field label="Razão social" name="razaoSocial" placeholder="Nome registrado da empresa" /><Field label="CNPJ" name="cnpj" placeholder="00.000.000/0000-00" /></div>{page === 'point' && <p className="rounded-xl bg-emerald-50 p-3 text-xs leading-5 text-emerald-900">O cadastro será enviado para aprovação antes de o ponto aparecer na busca pública.</p>}<Field label="E-mail de contato" name="email" type="email" autoComplete="email" /><div className="grid gap-5 sm:grid-cols-2"><Field label="Telefone" name="telefone" type="tel" autoComplete="tel" placeholder="(00) 00000-0000" /><Field label="Endereço" name="endereco" autoComplete="street-address" placeholder="Rua, número e bairro" /></div><div className="grid gap-5 sm:grid-cols-2"><Field label="Cidade" name="cidade" autoComplete="address-level2" placeholder="Sua cidade" /><label className={labelClass}>Estado (UF)<select className={inputClass} name="estado" required defaultValue=""><option value="" disabled>Selecione o estado</option>{['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'].map(uf => <option key={uf} value={uf}>{uf}</option>)}</select></label></div><div className="grid gap-5 sm:grid-cols-2"><Field label="Latitude (opcional)" name="latitude" type="number" required={false} step="any" placeholder="-23.5505" /><Field label="Longitude (opcional)" name="longitude" type="number" required={false} step="any" placeholder="-46.6333" /></div><label className="flex items-start gap-3 text-sm leading-5 text-slate-600"><input type="checkbox" name="termos" required className="mt-1 accent-emerald-700" />Concordo com os termos de uso e a política de privacidade.</label></>}
           {page === 'login' && <><Field label="E-mail" name="email" type="email" autoComplete="email" placeholder="voce@exemplo.com" /><Field label="Senha" name="senha" type="password" autoComplete="current-password" /><div className="text-right"><button type="button" onClick={() => go('recovery')} className="text-sm font-semibold text-emerald-800 hover:underline">Esqueci minha senha</button></div></>}
           {page === 'recovery' && <Field label="E-mail cadastrado" name="email" type="email" autoComplete="email" placeholder="voce@exemplo.com" />}
           <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-800 px-5 py-3.5 font-bold text-white shadow-sm transition hover:bg-emerald-900 disabled:cursor-wait disabled:opacity-60">{busy ? 'Aguarde...' : page === 'login' ? 'Entrar na conta' : page === 'signup' ? 'Criar minha conta' : page === 'recovery' ? 'Continuar' : 'Enviar cadastro'} <span>→</span></button>
